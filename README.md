@@ -110,7 +110,7 @@ File structure:
 
 The input data format for IR task see figure below:
 
-![Tevatron raw data template for IR datasets](./photos/Tevatron raw data template for IR datasets.png)
+![Tevatron raw data template for IR datasets](/photos/Tevatron-raw-data-template-for-IR-datasets.png)
 
 The construction method of Tevatron/msmarco-passage, see [get-data](https://github.com/texttron/tevatron/tree/main/examples/coCondenser-marco#get-data). This dataset contains 400,782 examples, with at least one positive passages and at most 30 negative passages.
 
@@ -120,5 +120,5 @@ Data management is mainly related to three files:
 * datasets/dataset.py: Define class `HFTrainDataset` for training and `HFQueryDataset, HFCorpusDataset` for encoding (`datasets.Dataset` object).  **Load data and init preprocess method**.
 * data.py: Define class `TrainDataset` and `EncodeDataset` (**construct `torch.utils.data.Dataset` object**). Define class `QPCollator` and `EncodeCollator` for **batch construction**.
 
-The Figure below shows data stream (how data flows from class to class) and corresponding data format changes:![data stream](./photos/Data stream.png)
+The Figure below shows data stream (how data flows from class to class) and corresponding data format changes:![data stream](/photos/Data-stream.png)
 
