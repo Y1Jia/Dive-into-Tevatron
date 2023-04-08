@@ -30,6 +30,8 @@ class TrainDataset(Dataset):
         self.total_len = len(self.train_data)
 
     def create_one_example(self, text_encoding: List[int], is_query=False):
+        # refer to https://huggingface.co/docs/transformers/main/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.prepare_for_model
+        # get a dict of {'input_ids':List[ids]} (add special tokens and truncate)
         item = self.tok.prepare_for_model(
             text_encoding,
             truncation='only_first',
@@ -44,7 +46,7 @@ class TrainDataset(Dataset):
         return self.total_len
 
     def __getitem__(self, item) -> Tuple[BatchEncoding, List[BatchEncoding]]:
-        group = self.train_data[item]
+        group = self.train_data[item]   # group:{'query': List[ids], 'positives': List[List[ids]], 'negatives': List[List[ids]]}
         epoch = int(self.trainer.state.epoch)
 
         _hashed_seed = hash(item + self.trainer.args.seed)
@@ -56,6 +58,7 @@ class TrainDataset(Dataset):
         group_positives = group['positives']
         group_negatives = group['negatives']
 
+        # sample positive and negatives
         if self.data_args.positive_passage_no_shuffle:
             pos_psg = group_positives[0]
         else:
@@ -119,11 +122,13 @@ class QPCollator(DataCollatorWithPadding):
         qq = [f[0] for f in features]
         dd = [f[1] for f in features]
 
+        # convert List[List[item]] to List[item]
         if isinstance(qq[0], list):
             qq = sum(qq, [])
         if isinstance(dd[0], list):
             dd = sum(dd, [])
 
+        # refer to https://huggingface.co/docs/transformers/main/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.pad
         q_collated = self.tokenizer.pad(
             qq,
             padding='max_length',

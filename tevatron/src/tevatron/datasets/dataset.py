@@ -19,11 +19,17 @@ PROCESSOR_INFO = {
 class HFTrainDataset:
     def __init__(self, tokenizer: PreTrainedTokenizer, data_args: DataArguments, cache_dir: str):
         data_files = data_args.train_path
-        if data_files:
+        # set train_path the name of custom dataset if use custom dataset. 
+        # at the same time, data_args.dataset_name will be 'json', see __post_init__ in arguments.py 
+        if data_files: 
             data_files = {data_args.dataset_split: data_files}
+
+        # refer to https://huggingface.co/docs/datasets/v2.11.0/en/package_reference/loading_methods#datasets.load_dataset
         self.dataset = load_dataset(data_args.dataset_name,
                                     data_args.dataset_language,
                                     data_files=data_files, cache_dir=cache_dir, use_auth_token=True)[data_args.dataset_split]
+        
+        # choose preprocessor from dict above (PROCESSOR_INFO)
         self.preprocessor = PROCESSOR_INFO[data_args.dataset_name][0] if data_args.dataset_name in PROCESSOR_INFO\
             else DEFAULT_PROCESSORS[0]
         self.tokenizer = tokenizer
@@ -31,7 +37,8 @@ class HFTrainDataset:
         self.p_max_len = data_args.p_max_len
         self.proc_num = data_args.dataset_proc_num
         self.neg_num = data_args.train_n_passages - 1
-        self.separator = getattr(self.tokenizer, data_args.passage_field_separator, data_args.passage_field_separator)
+        # seperator between 'title' and 'txt' when concate them. see datasets/preprocessor.py
+        self.separator = getattr(self.tokenizer, data_args.passage_field_separator, data_args.passage_field_separator) 
 
     def process(self, shard_num=1, shard_idx=0):
         self.dataset = self.dataset.shard(shard_num, shard_idx)

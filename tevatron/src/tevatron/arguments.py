@@ -86,6 +86,7 @@ class DataArguments:
 
     def __post_init__(self):
         if self.dataset_name is not None:
+            ''' load dataset (e.g. Tevatron/msmarco-passage) from huggingface hub '''
             info = self.dataset_name.split('/')
             self.dataset_split = info[-1] if len(info) == 3 else 'train'
             self.dataset_name = "/".join(info[:-1]) if len(info) == 3 else '/'.join(info)
@@ -97,6 +98,7 @@ class DataArguments:
             self.dataset_split = 'train'
             self.dataset_language = 'default'
         if self.train_dir is not None:
+            ''' load custom dataset (.json or .jsonl) from self.train_dir '''
             if os.path.isdir(self.train_dir):
                 files = os.listdir(self.train_dir)
                 # change all train directory paths to absolute

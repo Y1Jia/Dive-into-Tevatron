@@ -1,2 +1,8 @@
 #code-related
 *.vscode/
+*.egg-info/
+/tevatron/src/tevatron/model_msmarco
+
+
+# docs related
+*.pptx

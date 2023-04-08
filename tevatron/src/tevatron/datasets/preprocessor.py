@@ -6,6 +6,8 @@ class TrainPreProcessor:
         self.separator = separator
 
     def __call__(self, example):
+        # refer to https://huggingface.co/docs/transformers/main/en/main_classes/tokenizer#transformers.PreTrainedTokenizer.encode
+        # Converts a string to a sequence of ids (integer), using the tokenizer and vocabulary.
         query = self.tokenizer.encode(example['query'],
                                       add_special_tokens=False,
                                       max_length=self.query_max_length,
