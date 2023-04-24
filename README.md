@@ -43,7 +43,7 @@ File structure:
 │  arguments.py
 │  data.py	# 'Data Management':`torch.utils.data.Dataset` object and collator for batch construction
 │  loss.py
-│  trainer.py
+│  trainer.py	# 'Trainer'
 │  __init__.py
 │
 ├─datasets
@@ -71,8 +71,8 @@ File structure:
 │
 ├─modeling
 │  │  colbert.py
-│  │  dense.py
-│  │  encoder.py
+│  │  dense.py	# 'Dense Retrieval Model': class of dense model
+│  │  encoder.py	# 'Dense Retrieval Model': abstract class of encoder
 │  │  splade.py
 │  │  unicoil.py
 │  └─ __init__.py
@@ -121,4 +121,32 @@ Data management is mainly related to three files:
 * data.py: Define class `TrainDataset` and `EncodeDataset` (**construct `torch.utils.data.Dataset` object**). Define class `QPCollator` and `EncodeCollator` for **batch construction**.
 
 The Figure below shows data stream (how data flows from class to class) and corresponding data format changes:![data stream](/photos/Data-stream.png)
+
+## Dense Retrieval Model
+
+> Tevatron’s model class DenseModel is a Pytorch nn.Module subclass that defines the deep neural encoder of the dense retriever. Functionally, it interfaces the underlying Transformer models and provides methods for text encoding and loss computation.
+
+In modeling/encoder.py, `class EncoderModel(nn.Module)` is abstract class of encoder, defining:
+
+* forward: for inference and training
+* how to compute similarity (use inner product )
+
+* loss: cross entropy loss (specifically, contrastive loss with in-batch negatives)
+* how to init, load, save encoder
+
+In modeling/dense.py, `class DenseModel(EncoderModel)` further define:
+
+* how to encode passage and query (how to get representation of doc and query)
+
+* how to load and build pooler (not use pooler in default)
+
+## Trainer
+
+> To complete the dense retriever training setup, we introduce a DenseTrainer which implements miscellaneous training utilities. It controls basic setups such as batch size and the number of training epochs. When running on multiple GPUs, the trainer will properly set up distributed training and wrap models for gradient reduction. During training, it will asynchronously load training data to overlap computation and I/O operations. At each training step, **the trainer turns a batch of loaded data into tensors and passes them to the model**. In this way, the trainer glues the data sets and models together.
+
+In trainer.py, `class TevatronTrainer(Trainer)` overrides methods of compute_loss, training_step.
+
+
+
+
 

@@ -75,8 +75,8 @@ class EncoderModel(nn.Module):
             self.world_size = dist.get_world_size()
 
     def forward(self, query: Dict[str, Tensor] = None, passage: Dict[str, Tensor] = None):
-        q_reps = self.encode_query(query)
-        p_reps = self.encode_passage(passage)
+        q_reps = self.encode_query(query)   # shape: (batch_size, hidden_size)
+        p_reps = self.encode_passage(passage)   # shape: (batch_size * train_n_passages, hidden_size)
 
         # for inference
         if q_reps is None or p_reps is None:
@@ -91,11 +91,12 @@ class EncoderModel(nn.Module):
                 q_reps = self._dist_gather_tensor(q_reps)
                 p_reps = self._dist_gather_tensor(p_reps)
 
+            # use in-batch negatives
             scores = self.compute_similarity(q_reps, p_reps)
             scores = scores.view(q_reps.size(0), -1)
 
             target = torch.arange(scores.size(0), device=scores.device, dtype=torch.long)
-            target = target * (p_reps.size(0) // q_reps.size(0))
+            target = target * (p_reps.size(0) // q_reps.size(0))    # target indicates index of pos doc
 
             loss = self.compute_loss(scores, target)
             if self.negatives_x_device:

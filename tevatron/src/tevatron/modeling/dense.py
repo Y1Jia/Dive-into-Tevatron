@@ -34,8 +34,9 @@ class DenseModel(EncoderModel):
     def encode_passage(self, psg):
         if psg is None:
             return None
+        # refer to https://huggingface.co/docs/transformers/main/en/main_classes/output#transformers.utils.ModelOutput
         psg_out = self.lm_p(**psg, return_dict=True)
-        p_hidden = psg_out.last_hidden_state
+        p_hidden = psg_out.last_hidden_state    # shape: (batch_size * trian_n_passages, p_max_len, hidden_size)
         if self.pooler is not None:
             p_reps = self.pooler(p=p_hidden)  # D * d
         else:
@@ -46,7 +47,7 @@ class DenseModel(EncoderModel):
         if qry is None:
             return None
         qry_out = self.lm_q(**qry, return_dict=True)
-        q_hidden = qry_out.last_hidden_state
+        q_hidden = qry_out.last_hidden_state    # shape: (batch_size, q_max_len, hidden_size)
         if self.pooler is not None:
             q_reps = self.pooler(q=q_hidden)
         else:
